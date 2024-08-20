@@ -1,0 +1,71 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+# load library
+library(here)
+library(tidyverse)
+library(lubridate)
+```
+
+# Task 1
+```{r}
+# read in data sets
+bird_observations <- read.csv(here("data", "knb-lter-cap", "52_pp52_birds_1.csv"))
+
+sites <- read.csv(here("data", "knb-lter-cap", "52_pp52_sites_1.csv"))
+
+surveys <- read.csv(here("data", "knb-lter-cap", "52_pp52_surveys_1.csv"))
+
+taxalist <- read.csv(here("data", "knb-lter-cap", "52_pp52_taxalist_1.csv"))
+```
+
+```{r}
+# create a subset of bird observations
+birds_subset <- bird_observations %>%
+  subset(species_id %in% c("BHCO", "RWBL") & site_id %in% c("LI-W", "NU-C"))
+```
+
+```{r}
+# practice left joins
+left_join <- left_join(birds_subset, sites, by = "site_id")
+
+birds_left <- left_join(left_join, taxalist, by = "species_id")
+```
+
+```{r}
+# practice full joins
+birds_full <- full_join(bird_subset, sites, by = "site_id")
+```
+
+# Task 2
+```{r}
+bird_observations <- bird_observations %>%
+  rename(bird_obs_notes = notes)
+
+full_join1 <- full_join(bird_observations, sites, by = "site_id")
+  
+full_join2 <- full_join(full_join1, surveys, by = "survey_id")
+
+full_join3 <- full_join(full_join2, taxalist, by = "species_id")
+```
+
+```{r}
+birds <- full_join3 %>%
+  subset(select = c("survey_date", "common_name", "park_name", "bird_count"))
+```
+
+```{r}
+birds <- birds %>%
+  mutate(survey_month = as.factor(month(survey_date))) %>%
+  relocate(survey_month, .after = survey_date) %>%
+  group_by(park_name, survey_month) %>%
+  summarize(total_birds = n()) %>%
+  filter(park_name %in% c("Lindo", "Orme", "Palomino", "Sonrisa"))
+```
+
+
+

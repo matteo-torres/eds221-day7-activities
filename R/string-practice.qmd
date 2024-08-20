@@ -1,0 +1,32 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(tidyr)
+```
+
+```{r}
+alarm_report <- tibble::tribble(
+         ~date,           ~building,                                               ~alarm_message,
+  "2020-03-14", "Engineering-North", "10:02am -- HVAC system down, facilities management alerted",
+  "2020-03-15",         "Bren Hall",                    "8:24am -- Elevator North out of service",
+  "2020-04-10", "Engineering-South",     "12:41am -- Fire alarm, UCSB fire responded and cleared",
+  "2020-04-18",        "Engr-North",     "9:58pm -- Campus point emergency siren, UCPD responded"
+  )
+```
+
+```{r}
+building <- alarm_report %>%
+  mutate(building = str_replace(building, pattern = "Engineering", replacement = "Engr")) %>%
+  separate(building, into = c("building", "wing"), sep = "-") %>%
+  filter(str_detect(alarm_message, "responded")) %>%
+  separate(alarm_message, into = c("time", "message"), sep = "--") %>%
+  mutate(date = as.Date(date))
+```
+
+
+
